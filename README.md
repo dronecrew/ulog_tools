@@ -8,7 +8,7 @@ ulog analysis tools
 ## Install
 
 ```bash
-pip3 instlal ulog_tools
+pip3 install ulog_tools
 ```
 
 ## Usage
