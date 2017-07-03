@@ -172,7 +172,8 @@ def model_to_acc_tf(m):
     tf_integrator = control.tf((1), (1, 0))
     return acc_tf * tf_integrator
 
-def attitude_pid_design(G_rate_ol, d_tc=1.0/10, K0=[0.2, 0.2, 0.01, 5]):
+def attitude_pid_design(model, d_tc=1.0/10, K0=[0.2, 0.2, 0.01, 5]):
+    G_rate_ol = model_to_acc_tf(model)
     K_rate, G_cl_rate, G_ol_rate_comp = pid_design(
         G_rate_ol, K0[:3], d_tc)
     tf_integrator = control.tf((1), (1, 0))
