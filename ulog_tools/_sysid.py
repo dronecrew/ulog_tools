@@ -157,9 +157,11 @@ def prepare_data(filename: str):
 
 
 def fit_best(y: np.array, u: np.array, fs: float, name: str, window: int=5,
-        plot: bool=False, verbose: bool=False):
+        plot: bool=False, verbose: bool=False, log_stop: float=1):
     # type: (np.array, np.array, float, str, int, bool) -> Dict
-    """Return the model for the best window in the log"""
+    """Return the model for the best window in the log
+    log_stop: 0-1 , percentage, 1 means process the entire log
+    """
     i = 0
     best = {
         't_start': None,
@@ -170,7 +172,7 @@ def fit_best(y: np.array, u: np.array, fs: float, name: str, window: int=5,
     n_windows = np.floor(tf/window)
     if verbose:
         print('finding best fit window for {:s}'.format(name))
-    while i < n_windows*0.1:
+    while i < n_windows*log_stop:
         if verbose and i%10 == 0:
             print('{:d}%'.format(int(100*i/n_windows)))
         t0 = i * window
