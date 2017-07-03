@@ -172,7 +172,7 @@ def fit_best(y: np.array, u: np.array, fs: float, name: str, window: int=5,
     n_windows = np.floor(tf/window)
     if verbose:
         print('finding best fit window for {:s}'.format(name))
-    while i < n_windows*log_stop:
+    while i < int(n_windows*log_stop):
         if verbose and i%10 == 0:
             print('{:d}%'.format(int(100*i/n_windows)))
         t0 = i * window
@@ -201,6 +201,8 @@ def fit_best(y: np.array, u: np.array, fs: float, name: str, window: int=5,
 def attitude_sysid(data: Dict, plot: bool=False, verbose: bool=False):
     """Perform attitude system ID"""
     fs = ut.ulog.sample_frequency(data)
+    if fs < 200:
+        raise ValueError("sampling frequency too low: {:f}, needs to be > 200 Hz".format(fs))
     # noinspection PyTypeChecker
     bandpass = IirFilter(wp=[1, 5], ws=[0.5, 20], gpass=0.01,
                          gstop=40, fs=fs, ftype='ellip')
