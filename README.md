@@ -80,6 +80,6 @@ ulog_tools_pid_design --url http://review.px4.io/download?log=35b27fdb-6a93-427a
 
 ## Algorithms
 
-* System Identification: Slides a window across the entire log, default 5 seconds, returns the model with the best fit,  1- error variance/ signal variance
+* System Identification: Slides a window across the entire log, default 5 seconds, returns the model with the best fit,  fit = (1- error variance/ signal variance)
 * Control Design:  LQR with output feedback approach for structured control system optimization
 
