@@ -1,3 +1,0 @@
-<component name="DependencyValidationManager">
-  <scope name="project_source" pattern="!file:versioneer.py&amp;&amp;!file[ulog_tools]:.idea//*&amp;&amp;!file:setup.cfg" />
-</component>
