@@ -58,3 +58,4 @@ test/tmp/
 environment.yml
 tmp/
 __pycache__
+*.pyc

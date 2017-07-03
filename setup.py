@@ -41,15 +41,15 @@ Operating System :: MacOS
 
 
 setup(
-    name='px4tools',
+    name='ulog_tools',
     maintainer="James Goppert",
     maintainer_email="james.goppert@gmail.com",
     description=DOCLINES[0],
     long_description="\n".join(DOCLINES[2:]),
-    url='https://github.com/dronecrew/px4tools',
+    url='https://github.com/dronecrew/ulog_tools',
     author='James Goppert',
     author_email='james.goppert@gmail.com',
-    download_url='https://github.com/dronecrew/px4tools',
+    download_url='https://github.com/dronecrew/ulog_tools',
     license='BSD 3-Clause',
     classifiers=[_f for _f in CLASSIFIERS.split('\n') if _f],
     platforms=["Windows", "Linux", "Solaris", "Mac OS-X", "Unix"],
@@ -59,7 +59,7 @@ setup(
     tests_require=['nose', 'coverage'],
     test_suite='nose.collector',
     entry_points={
-        'console_scripts': ['px42csv=ulog_tools.px42csv:main'],
+        'console_scripts': ['ulog_pid_opt=ulog_tools.control_opt:main'],
     },
     packages=find_packages(),
     version=versioneer.get_version(),
