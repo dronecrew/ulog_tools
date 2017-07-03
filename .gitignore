@@ -59,3 +59,4 @@ environment.yml
 tmp/
 __pycache__
 *.pyc
+*out.gains
