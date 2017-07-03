@@ -156,7 +156,8 @@ def prepare_data(filename: str):
     return combined
 
 
-def fit_best(y: np.array, u: np.array, fs: float, name: str, window: int=5, plot: bool=False):
+def fit_best(y: np.array, u: np.array, fs: float, name: str, window: int=5,
+        plot: bool=False, verbose: bool=False):
     # type: (np.array, np.array, float, str, int, bool) -> Dict
     """Return the model for the best window in the log"""
     i = 0
@@ -165,7 +166,13 @@ def fit_best(y: np.array, u: np.array, fs: float, name: str, window: int=5, plot
         't_end': None,
         'model': None,
     }
-    while (i + 1) * window < y.index[-1]:
+    tf = y.index[-1]
+    n_windows = np.floor(tf/window)
+    if verbose:
+        print('finding best fit window for {:s}'.format(name))
+    while (i + 1) * window < tf:
+        if verbose and i%10 == 0:
+            print('{:d}%'.format(int(100*i/n_windows)))
         t0 = i * window
         t1 = (i + 1) * window
         res = find_delay_gain(
@@ -189,7 +196,7 @@ def fit_best(y: np.array, u: np.array, fs: float, name: str, window: int=5, plot
     return best
 
 
-def attitude_sysid(data: Dict):
+def attitude_sysid(data: Dict, plot: bool=False, verbose: bool=False):
     """Perform attitude system ID"""
     fs = ut.ulog.sample_frequency(data)
     # noinspection PyTypeChecker
@@ -201,19 +208,19 @@ def attitude_sysid(data: Dict):
         y=series_diff(bandpass.apply(data['f_gyro_rad_0'])),
         u=bandpass.apply(data['f_control_0']),
         fs=fs,
-        name='roll', plot=True)
+        name='roll', plot=plot, verbose=verbose)
 
     res['pitch'] = fit_best(
         y=series_diff(bandpass.apply(data['f_gyro_rad_1'])),
         u=bandpass.apply(data['f_control_1']),
         fs=fs,
-        name='pitch', plot=True)
+        name='pitch', plot=plot, verbose=verbose)
 
     res['yaw'] = fit_best(
         y=series_diff(bandpass.apply(data['f_gyro_rad_2'])),
         u=bandpass.apply(data['f_control_2']),
         fs=fs,
-        name='yaw', plot=True)
+        name='yaw', plot=plot, verbose=verbose)
     return res
 
 

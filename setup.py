@@ -54,12 +54,12 @@ setup(
     classifiers=[_f for _f in CLASSIFIERS.split('\n') if _f],
     platforms=["Windows", "Linux", "Solaris", "Mac OS-X", "Unix"],
     install_requires=[
-        'scipy', 'numpy', 'control', 'matplotlib',
+        'scipy', 'numpy', 'control', 'matplotlib', 'slycot',
         'pandas >= 0.19.2', 'transforms3d', 'pyulog', 'sympy'],
     tests_require=['nose', 'coverage'],
     test_suite='nose.collector',
     entry_points={
-        'console_scripts': ['ulog_pid_opt=ulog_tools.control_opt:main'],
+        'console_scripts': ['ulog_tools_pid_design=ulog_tools.control_opt:main'],
     },
     packages=find_packages(),
     version=versioneer.get_version(),
