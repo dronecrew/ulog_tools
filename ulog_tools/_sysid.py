@@ -202,7 +202,7 @@ def attitude_sysid(data: Dict, plot: bool=False, verbose: bool=False):
     """Perform attitude system ID"""
     fs = ut.ulog.sample_frequency(data)
     if fs < 200:
-        raise ValueError("sampling frequency too low: {:f}, needs to be > 200 Hz".format(fs))
+        raise ValueError("sampling frequency too low: {:5.0f} Hz, needs to be > 200 Hz".format(fs))
     # noinspection PyTypeChecker
     bandpass = IirFilter(wp=[1, 5], ws=[0.5, 20], gpass=0.01,
                          gstop=40, fs=fs, ftype='ellip')
