@@ -54,7 +54,7 @@ setup(
     classifiers=[_f for _f in CLASSIFIERS.split('\n') if _f],
     platforms=["Windows", "Linux", "Solaris", "Mac OS-X", "Unix"],
     install_requires=[
-        'scipy', 'numpy', 'control',
+        'scipy', 'numpy', 'control', 'matplotlib',
         'pandas >= 0.19.2', 'transforms3d', 'pyulog', 'sympy'],
     tests_require=['nose', 'coverage'],
     test_suite='nose.collector',
