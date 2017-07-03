@@ -16,9 +16,8 @@ pip3 install ulog_tools
 ### Log File
 
 * Required logging topics
-
- * actuator\_controls > 200 Hz
- * sensor\_combined > 200 Hz
+  * actuator\_controls > 200 Hz
+  * sensor\_combined > 200 Hz
 
 ### Commandline
 
