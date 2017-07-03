@@ -170,7 +170,7 @@ def fit_best(y: np.array, u: np.array, fs: float, name: str, window: int=5,
     n_windows = np.floor(tf/window)
     if verbose:
         print('finding best fit window for {:s}'.format(name))
-    while (i + 1) * window < tf:
+    while i < n_windows*0.1:
         if verbose and i%10 == 0:
             print('{:d}%'.format(int(100*i/n_windows)))
         t0 = i * window
