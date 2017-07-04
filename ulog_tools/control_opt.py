@@ -22,12 +22,13 @@ def model_to_acc_tf(m):
     tf_integrator = control.tf((1), (1, 0))
     return acc_tf * tf_integrator
 
-def attitude_loop_design(m, name, dcut_hz):
+def attitude_loop_design(m, name, dcut_hz, est_delay):
+    tf_est = control.tf(*control.pade(est_delay, 1)) 
     G_rate_ol = model_to_acc_tf(m)
     K_rate, G_rate_ol, G_rate_comp_cl = ut.lqrofb.pid_design(
         G=G_rate_ol, K_guess=[0.2, 0.2, 0], dcut_hz=dcut_hz)
-    tf_integrator = control.tf([1], [1, 0])
-    G_ol = G_rate_comp_cl*tf_integrator
+    tf_integrator = control.tf([1], [ 1, 0])
+    G_ol = G_rate_comp_cl*tf_integrator*tf_est
     K, G_ol, G_comp_cl = ut.lqrofb.pid_design(
         G=G_ol, K_guess=[1], dcut_hz=dcut_hz,
         use_I=False, use_D=False)
@@ -46,7 +47,8 @@ def main():
     file_group.add_argument('--url', help="download log from url")
     file_group.add_argument('--file', help="use local file")
 
-    parser.add_argument('--dcut_hz', help="derivative cut freq", default=10)
+    parser.add_argument('--dcut_hz', help="derivative cut freq", default=30)
+    parser.add_argument('--est_delay', help="estimator delay", default=0.05)
     parser.add_argument('--plot', action='store_true', help="enable plotting")
     parser.add_argument('--verbose', action='store_true', help="enable verbose")
     parser.add_argument('out', help="output file")
@@ -74,18 +76,25 @@ def main():
         print('dynamics identified')
         print('designing controller...',)
     dcut_hz = np.float(args.dcut_hz)
+    est_delay = np.float(args.est_delay)
     roll_gains = attitude_loop_design(
         m=res['roll']['model'],
         name='ROLL',
-        dcut_hz=dcut_hz)
+        dcut_hz=dcut_hz,
+        est_delay=est_delay
+        )
     pitch_gains = attitude_loop_design(
         m=res['pitch']['model'],
         name='PITCH',
-        dcut_hz=dcut_hz)
+        dcut_hz=dcut_hz,
+        est_delay=est_delay
+        )
     yaw_gains = attitude_loop_design(
         m=res['yaw']['model'],
         name='YAW',
-        dcut_hz=dcut_hz)
+        dcut_hz=dcut_hz,
+        est_delay=est_delay
+        )
     if args.verbose:
         print('controller designed, writing to file {:s}'.format(args.out))
     out = {}
