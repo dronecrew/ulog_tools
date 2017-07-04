@@ -47,7 +47,7 @@ def main():
     file_group.add_argument('--url', help="download log from url")
     file_group.add_argument('--file', help="use local file")
 
-    parser.add_argument('--dcut_hz', help="derivative cut freq", default=30)
+    parser.add_argument('--dcut_hz', help="derivative cut freq", default=20)
     parser.add_argument('--est_delay', help="estimator delay", default=0.05)
     parser.add_argument('--plot', action='store_true', help="enable plotting")
     parser.add_argument('--verbose', action='store_true', help="enable verbose")
