@@ -77,7 +77,7 @@ def main():
     pitch_gains = attitude_loop_design(res['pitch']['model'], 'PITCH')
     yaw_gains = attitude_loop_design(res['yaw']['model'], 'YAW')
     if args.verbose:
-        print('controller designed, writing to file {:s}', args.dest, args.verbose)
+        print('controller designed, writing to file {:s}', args.out, args.verbose)
     out = {}
     out.update(roll_gains)
     out.update(pitch_gains)
