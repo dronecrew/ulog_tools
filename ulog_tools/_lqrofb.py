@@ -118,39 +118,12 @@ def lqr_ofb_design(K_guess, ss_o, verbose=False):
     return K.T
 
 
-def attitude_sysid(y_acc, u_mix, verbose=False):
-    # type: (np.array, np.array, bool) -> (control.tf, float, float)
-    """
-    roll/pitch system id assuming delay/gain model
-    :param y_acc: (roll or pitch acceleration)
-    :param u_mix: (roll or pitch acceleration command)
-    :param verbose: show debug output
-    :return: (G_ol, delay, k)
-        G_ol: open loop plant
-        delay: time delay (sec)
-        k: gain
-    """
-    if verbose:
-        print('solving for plant model ', end='')
-    k, delay = delay_and_gain_sysid(y_acc, u_mix, verbose)
-    if verbose:
-        print('done')
-
-    # open loop, rate output, mix input plant
-    tf_acc = k * control.tf(*control.pade(delay, 1))  # order 1 approx
-    # can neglect motor, pole too fast to matter compared to delay, not used in sysid either
-    tf_integrator = control.tf((1), (1, 0))
-    G_ol = tf_acc * tf_integrator
-
-    return G_ol, delay, k
-
-
-def pid_design(G, K_guess, d_tc, verbose=False, use_P=True, use_I=True, use_D=True):
+def pid_design(G, K_guess, dcut_hz, verbose=False, use_P=True, use_I=True, use_D=True):
     # type: (control.tf, np.array, float, bool, bool, bool, bool) -> (np.array, control.tf, control.tf)
     """
     :param G: transfer function
     :param K_guess: gain matrix guess
-    :param d_tc: time constant for derivative
+    :param dcut_hz: derivative low pass filter cut frequency
     :param verbose: show debug output
     :param use_P: use p gain in design
     :param use_I: use i gain in design
@@ -160,6 +133,7 @@ def pid_design(G, K_guess, d_tc, verbose=False, use_P=True, use_I=True, use_D=Tr
         G_comp: open loop compensated plant
         Gc_comp: closed loop compensated plant
     """
+    d_tc = 1.0/ (2*np.pi*dcut_hz)
     # compensator transfer function
     H = []
     if use_P:
@@ -218,189 +192,3 @@ def plot_loops(name, G_ol, G_cl):
     plt.title(name + ' root locus')
     plt.grid()
 
-
-def attitude_control_design(
-        name, y, u, rolling_mean_window=100,
-        do_plot=False, verbose=False, d_tc=1.0 / 125):
-    # type: (str, np.array, np.array, int, bool, bool, float) -> (np.array, control.tf)
-    """
-    Do sysid and control design for roll/pitch rate loops.
-    :param name: 
-    :param y: output
-    :param u: input
-    :param rolling_mean_window: number of samples in rolling mean
-    :param do_plot: controls plotting
-    :param verbose: show debug output
-    :param d_tc: derivative time constant
-    :return: (gain, closed loop transfer function)
-    """
-    K_guess = np.matrix([[0.1, 0.1, 0.001]]).T
-
-    # remove bias
-    y_bias = y.rolling(rolling_mean_window).mean()
-    y_debiased = y - y_bias
-    u_bias = u.rolling(rolling_mean_window).mean()
-    u_debiased = u - u_bias
-
-    G_ol, delay, k = attitude_sysid(
-        y_debiased, u_debiased, verbose)
-
-    K, G_ol_rate, G_cl_rate = pid_design(
-        G_ol, K_guess, d_tc, verbose)
-
-    if do_plot:
-        plt.figure()
-        u_debiased.plot(label='debiased input')
-        u.plot(label='input')
-        plt.legend()
-        plt.xlabel('t, sec')
-        plt.title(name + ' input')
-        plt.grid()
-
-        plt.figure()
-        y_debiased.plot(label='debiased output')
-        y.plot(label='output')
-        plt.legend()
-        plt.xlabel('t, sec')
-        plt.title(name + ' output')
-        plt.grid()
-
-        plt.figure()
-        plot_delay_and_gain_fit(k, delay, y_debiased, u_debiased)
-        plt.title(name + ' fit')
-        plt.grid()
-
-        plt.figure()
-        plot_loops(name, G_ol_rate, G_cl_rate)
-
-    return K, G_cl_rate
-
-
-def control_design(raw_data, do_plot=False, rolling_mean_window=100, verbose=False):
-    # type: (pd.DataFrame, bool, int, bool) -> (OrderedDict, dict)
-    """
-    Design a PID controller from log file.
-    :param raw_data: data frame
-    :param do_plot: controls plotting
-    :param rolling_mean_window: number of rolling mean samples
-    :param verbose: show debug output
-    :return: (gain ordered dict, local variables)
-    """
-    data, dt = setup_data(raw_data)
-    d_tc = 1.0 / 125  # nyquist frequency of derivative in PID, (250 Hz/2)
-    K_guess_att = np.matrix([[1.0]]).T
-
-    roll_acc = data.ATT_RollRate.diff() / dt
-    K_rollrate, G_cl_rollrate = attitude_control_design(
-        'roll rate', roll_acc, data.ATTC_Roll,
-        rolling_mean_window=rolling_mean_window,
-        do_plot=do_plot, verbose=verbose, d_tc=d_tc)
-
-    tf_integrator = control.tf((1), (1, 0))
-
-    K_roll, G_roll, G_cl_roll = pid_design(
-        G_cl_rollrate * tf_integrator, K_guess_att, d_tc,
-        verbose=verbose, use_I=False, use_D=False)
-
-    if do_plot:
-        plt.figure()
-        plot_loops('roll', G_roll, G_cl_roll)
-
-    pitch_acc = data.ATT_PitchRate.diff() / dt
-    K_pitchrate, G_cl_pitchrate = attitude_control_design(
-        'pitch rate', pitch_acc, data.ATTC_Pitch,
-        rolling_mean_window=rolling_mean_window,
-        do_plot=do_plot, d_tc=d_tc, verbose=verbose)
-
-    K_pitch, G_pitch, G_cl_pitch = pid_design(
-        G_cl_pitchrate * tf_integrator, K_guess_att, d_tc,
-        verbose=verbose, use_I=False, use_D=False)
-
-    if do_plot:
-        plt.figure()
-        plot_loops('pitch', G_pitch, G_cl_pitch)
-
-    if verbose:
-        print('G_roll', G_roll)
-        print('G_cl_roll', G_cl_roll)
-        print('G_cl_rollrate', G_cl_rollrate)
-        print('G_pitch', G_pitch)
-        print('G_cl_pitch', G_cl_pitch)
-        print('G_cl_pitchrate', G_cl_pitchrate)
-
-    return OrderedDict([
-        ('MC_ROLL_P', round(K_roll[0, 0], 3)),
-        ('MC_ROLLRATE_P', round(K_rollrate[0, 0], 3)),
-        ('MC_ROLLRATE_I', round(K_rollrate[1, 0], 3)),
-        ('MC_ROLLRATE_D', round(K_rollrate[2, 0], 3)),
-        ('MC_PITCH_P', round(K_pitch[0, 0], 3)),
-        ('MC_PITCHRATE_P', round(K_pitchrate[0, 0], 3)),
-        ('MC_PITCHRATE_I', round(K_pitchrate[1, 0], 3)),
-        ('MC_PITCHRATE_D', round(K_pitchrate[2, 0], 3)),
-    ]), locals()
-
-
-def control_design_ulog(raw_data, do_plot=False, rolling_mean_window=100, verbose=False):
-    # type: (pd.DataFrame, bool, int, bool) -> (OrderedDict, dict)
-
-    """
-    Design a PID controller from log file.
-    TODO, debug this
-    :param raw_data: data frame
-    :param do_plot: controls plotting
-    :param rolling_mean_window: number of rolling mean samples
-    :param verbose: show debug output
-    :return: (gain ordered dict, local variables)
-    """
-    data, dt = setup_data(raw_data)
-    d_tc = 1.0 / 125  # nyquist frequency of derivative in PID, (250 Hz/2)
-    K_guess_att = np.matrix([[1.0]]).T
-
-    roll_acc = data.ATT_RollRate.diff() / dt
-    K_rollrate, G_cl_rollrate = attitude_control_design(
-        'roll rate', roll_acc, data.ATTC_Roll,
-        rolling_mean_window=rolling_mean_window,
-        do_plot=do_plot, verbose=verbose, d_tc=d_tc)
-
-    tf_integrator = control.tf((1), (1, 0))
-
-    K_roll, G_roll, G_cl_roll = pid_design(
-        G_cl_rollrate * tf_integrator, K_guess_att, d_tc,
-        verbose=verbose, use_I=False, use_D=False)
-
-    if do_plot:
-        plt.figure()
-        plot_loops('roll', G_roll, G_cl_roll)
-
-    pitch_acc = data.ATT_PitchRate.diff() / dt
-    K_pitchrate, G_cl_pitchrate = attitude_control_design(
-        'pitch rate', pitch_acc, data.ATTC_Pitch,
-        rolling_mean_window=rolling_mean_window,
-        do_plot=do_plot, d_tc=d_tc, verbose=verbose)
-
-    K_pitch, G_pitch, G_cl_pitch = pid_design(
-        G_cl_pitchrate * tf_integrator, K_guess_att, d_tc,
-        verbose=verbose, use_I=False, use_D=False)
-
-    if do_plot:
-        plt.figure()
-        plot_loops('pitch', G_pitch, G_cl_pitch)
-
-    if verbose:
-        print('G_roll', G_roll)
-        print('G_cl_roll', G_cl_roll)
-        print('G_cl_rollrate', G_cl_rollrate)
-        print('G_pitch', G_pitch)
-        print('G_cl_pitch', G_cl_pitch)
-        print('G_cl_pitchrate', G_cl_pitchrate)
-
-    return OrderedDict([
-        ('MC_ROLL_P', round(K_roll[0, 0], 3)),
-        ('MC_ROLLRATE_P', round(K_rollrate[0, 0], 3)),
-        ('MC_ROLLRATE_I', round(K_rollrate[1, 0], 3)),
-        ('MC_ROLLRATE_D', round(K_rollrate[2, 0], 3)),
-        ('MC_PITCH_P', round(K_pitch[0, 0], 3)),
-        ('MC_PITCHRATE_P', round(K_pitchrate[0, 0], 3)),
-        ('MC_PITCHRATE_I', round(K_pitchrate[1, 0], 3)),
-        ('MC_PITCHRATE_D', round(K_pitchrate[2, 0], 3)),
-    ]), locals()

@@ -22,15 +22,14 @@ def model_to_acc_tf(m):
     tf_integrator = control.tf((1), (1, 0))
     return acc_tf * tf_integrator
 
-def attitude_loop_design(m, name):
-    d_tc = 1.0/10
+def attitude_loop_design(m, name, dcut_hz):
     G_rate_ol = model_to_acc_tf(m)
     K_rate, G_rate_ol, G_rate_comp_cl = ut.lqrofb.pid_design(
-        G=G_rate_ol, K_guess=[0.2, 0.2, 0], d_tc=d_tc)
+        G=G_rate_ol, K_guess=[0.2, 0.2, 0], dcut_hz=dcut_hz)
     tf_integrator = control.tf([1], [1, 0])
     G_ol = G_rate_comp_cl*tf_integrator
     K, G_ol, G_comp_cl = ut.lqrofb.pid_design(
-        G=G_ol, K_guess=[1], d_tc=d_tc,
+        G=G_ol, K_guess=[1], dcut_hz=dcut_hz,
         use_I=False, use_D=False)
     return {
         'MC_{:s}RATE_P'.format(name): K_rate[0, 0],
@@ -47,6 +46,7 @@ def main():
     file_group.add_argument('--url', help="download log from url")
     file_group.add_argument('--file', help="use local file")
 
+    parser.add_argument('--dcut_hz', help="derivative cut freq", default=10)
     parser.add_argument('--plot', action='store_true', help="enable plotting")
     parser.add_argument('--verbose', action='store_true', help="enable verbose")
     parser.add_argument('out', help="output file")
@@ -73,11 +73,21 @@ def main():
     if args.verbose:
         print('dynamics identified')
         print('designing controller...',)
-    roll_gains = attitude_loop_design(res['roll']['model'], 'ROLL')
-    pitch_gains = attitude_loop_design(res['pitch']['model'], 'PITCH')
-    yaw_gains = attitude_loop_design(res['yaw']['model'], 'YAW')
+    dcut_hz = np.float(args.dcut_hz)
+    roll_gains = attitude_loop_design(
+        m=res['roll']['model'],
+        name='ROLL',
+        dcut_hz=dcut_hz)
+    pitch_gains = attitude_loop_design(
+        m=res['pitch']['model'],
+        name='PITCH',
+        dcut_hz=dcut_hz)
+    yaw_gains = attitude_loop_design(
+        m=res['yaw']['model'],
+        name='YAW',
+        dcut_hz=dcut_hz)
     if args.verbose:
-        print('controller designed, writing to file {:s}', args.out, args.verbose)
+        print('controller designed, writing to file {:s}'.format(args.out))
     out = {}
     out.update(roll_gains)
     out.update(pitch_gains)

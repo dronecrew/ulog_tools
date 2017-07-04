@@ -93,11 +93,20 @@ def find_delay_gain(y: np.array, u: np.array, fs: float, name: str='', plot: boo
         e = y - k * u.shift(i).bfill()
         return e.dot(e)
 
-    for i in range(40):
+    max_delay = 0.3
+    n_delay = int(max_delay*fs)
+    for i in range(n_delay):
         # pylint: disable=cell-var-from-loop
         # noinspection PyTypeChecker
-        res = scipy.optimize.minimize(lambda k_: f_cost(y, u, i, k_), x0=50)
+        res = scipy.optimize.minimize(
+                lambda k_: f_cost(y, u, i, k_), x0=50,
+                method='SLSQP',
+                bounds=[(0, 1000)],
+                )
         k = res['x'][0]
+        # if it failed for anything but a line search, print result
+        if res['success'] != True and res['status'] != 8:
+            print(res)
         costs.append(f_cost(y, u, i, k))
         gains.append(k)
         delays.append(i)
@@ -188,6 +197,8 @@ def fit_best(y: np.array, u: np.array, fs: float, name: str, window: int=5,
             best['t_start'] = t0
             best['t_end'] = t1
         i += 1
+    if verbose:
+        print('100%')
     t0 = best['t_start']
     t1 = best['t_end']
     find_delay_gain(
