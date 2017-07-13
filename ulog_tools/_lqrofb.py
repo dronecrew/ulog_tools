@@ -118,12 +118,13 @@ def lqr_ofb_design(K_guess, ss_o, verbose=False):
     return K.T
 
 
-def pid_design(G, K_guess, dcut_hz, verbose=False, use_P=True, use_I=True, use_D=True):
+def pid_design(G, K_guess, dcut_hz, fbcut_hz=None, verbose=False, use_P=True, use_I=True, use_D=True):
     # type: (control.tf, np.array, float, bool, bool, bool, bool) -> (np.array, control.tf, control.tf)
     """
     :param G: transfer function
     :param K_guess: gain matrix guess
     :param dcut_hz: derivative low pass filter cut frequency
+    :param fbcut_hz: feedback cut frequency for 2nd order butterworth, disabled if None
     :param verbose: show debug output
     :param use_P: use p gain in design
     :param use_I: use i gain in design
@@ -134,6 +135,7 @@ def pid_design(G, K_guess, dcut_hz, verbose=False, use_P=True, use_I=True, use_D
         Gc_comp: closed loop compensated plant
     """
     d_tc = 1.0/ (2*np.pi*dcut_hz)
+
     # compensator transfer function
     H = []
     if use_P:
@@ -161,7 +163,14 @@ def pid_design(G, K_guess, dcut_hz, verbose=False, use_P=True, use_I=True, use_D
     # print('K', K)
     # print('H', H)
     G_comp = control.series(G, H * K)
-    Gc_comp = control.feedback(G_comp, 1)
+
+    # 2nd order butterworth filter for angular rate feedback
+    if fbcut_hz is not None:
+        wc = fbcut_hz*2*np.pi
+        H_butter = control.tf((1), (1/(wc**2), 1.4142/wc, 1))
+        Gc_comp = control.feedback(G_comp, H_butter)
+    else:
+        Gc_comp = control.feedback(G_comp, 1)
 
     return K, G_comp, Gc_comp
 
