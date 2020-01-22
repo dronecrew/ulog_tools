@@ -1,4 +1,4 @@
-# ulog_tools
+# ulog_tools [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dronecrew/ulog_tools/master) [<img src="https://jupyter.org/assets/main-logo.svg" height="20" title="JupyterLab">](https://mybinder.org/v2/gh/dronecrew/ulog_tools/master?urlpath=lab) [![nbviewer](https://img.shields.io/badge/view%20on-nbviewer-brightgreen.svg)](http://nbviewer.jupyter.org/github/dronecrew/ulog_tools/tree/master)
 ulog analysis tools
 
 ## Requirements
