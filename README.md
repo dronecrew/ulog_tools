@@ -4,11 +4,19 @@ ulog analysis tools
 ## Requirements
 
 * Python 3
+* see environment.yml for dependencies
 
 ## Install
 
 ```bash
 pip3 install ulog_tools
+```
+
+Or using conda
+
+```bash
+conda env create -f environment.yml
+conda activate ulog_tools
 ```
 
 ## Usage
@@ -22,57 +30,57 @@ pip3 install ulog_tools
 ### Commandline
 
 ```bash
-ulog_tools_pid_design --url http://review.px4.io/download?log=d3980cdd-c8ef-478b-a838-fba9956009c4 out.gains
+ulog_tools_pid_design --url https://logs.px4.io/download?log=0467b169-aec0-44d0-bbd0-a42cce863acf  --verbose --plot out.txt
 ```
 
 #### Result
 
 ```json
 {
-  "MC_PITCHRATE_D": 0.0034238889791543717,
-  "MC_PITCHRATE_I": 0.07823542271951296,
-  "MC_PITCHRATE_P": 0.08827774216535533,
-  "MC_PITCH_P": 7.0339592673305855,
-  "MC_ROLLRATE_D": 0.0033358807670637275,
-  "MC_ROLLRATE_I": 0.10385472999114756,
-  "MC_ROLLRATE_P": 0.10710041094076796,
-  "MC_ROLL_P": 5.304756498388342,
-  "MC_YAWRATE_D": 0.0036348770832720268,
-  "MC_YAWRATE_I": 0.9300066286051631,
-  "MC_YAWRATE_P": 1.0085375280948274,
-  "MC_YAW_P": 6.985848146126574,
+  "MC_PITCHRATE_D": 0.007986111763821054,
+  "MC_PITCHRATE_I": 1.4199280160960568,
+  "MC_PITCHRATE_P": 0.3010445756612024,
+  "MC_PITCH_P": 5.474760010163753,
+  "MC_ROLLRATE_D": 0.008747392635960064,
+  "MC_ROLLRATE_I": 1.1962720090900754,
+  "MC_ROLLRATE_P": 0.29499919522081797,
+  "MC_ROLL_P": 5.361772007628582,
+  "MC_YAWRATE_D": 0.011026584612036192,
+  "MC_YAWRATE_I": 1.9736695282813295,
+  "MC_YAWRATE_P": 0.4805348843295458,
+  "MC_YAW_P": 5.317066206669442,
   "pitch": {
     "model": {
-      "delay": 0.04453746192794547,
-      "f_s": 246.98309072475325,
-      "fit": 0.9795666272678758,
-      "gain": 142.44997857292887,
-      "sample_delay": 11
+      "delay": 0.05778450098871699,
+      "f_s": 224.9738213113302,
+      "fit": 0.6820218656710324,
+      "gain": 108.63532791159108,
+      "sample_delay": 13
     },
-    "t_end": 25,
-    "t_start": 20
+    "t_end": 110,
+    "t_start": 105
   },
   "roll": {
     "model": {
-      "delay": 0.0404886017526777,
-      "f_s": 246.98309072475325,
-      "fit": 0.9944586094307987,
-      "gain": 171.34199377037035,
-      "sample_delay": 10
+      "delay": 0.06667442421775038,
+      "f_s": 224.9738213113302,
+      "fit": 0.7482813628055249,
+      "gain": 100.80854701682381,
+      "sample_delay": 15
     },
-    "t_end": 15,
-    "t_start": 10
+    "t_end": 110,
+    "t_start": 105
   },
   "yaw": {
     "model": {
-      "delay": 0.0,
-      "f_s": 246.98309072475325,
-      "fit": 0.7879995939132498,
-      "gain": 13.572575231076963,
-      "sample_delay": 0
+      "delay": 0.04889457775968361,
+      "f_s": 224.9738213113302,
+      "fit": 0.43330939920399325,
+      "gain": 72.43734245165282,
+      "sample_delay": 11
     },
-    "t_end": 60,
-    "t_start": 55
+    "t_end": 110,
+    "t_start": 105
   }
 }
 ```

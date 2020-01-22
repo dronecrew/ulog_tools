@@ -55,10 +55,10 @@ target/
 
 .*.swp
 test/tmp/
-environment.yml
 tmp/
 __pycache__
 *.pyc
 *out.gains
 .idea/
 *.out
+.vscode

@@ -1,0 +1,15 @@
+name: ulog_tools
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - matplotlib
+  - numpy
+  - sympy
+  - scipy
+  - control
+  - autopep8
+  - pytest=5.0.1
+  - jupyterlab
+  - pandas
+  - pyulog

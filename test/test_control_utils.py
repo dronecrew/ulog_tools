@@ -13,7 +13,7 @@ import sympy
 
 import ulog_tools as ut
 
-TEST_LOG_URL = "http://review.px4.io/download?log=35b27fdb-6a93-427a-b634-72ab45b9609e"
+TEST_LOG_URL = "https://logs.px4.io/download?log=0467b169-aec0-44d0-bbd0-a42cce863acf"
 TEST_DIR = os.path.realpath(os.path.dirname(__file__))
 TEST_TMP_DIR = os.path.join(TEST_DIR, 'tmp')
 
