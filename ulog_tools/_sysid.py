@@ -39,7 +39,7 @@ def ulog_to_dict(log: pyulog.ULog) -> Dict:
 
 def series_diff(series: pd.Series, order: int=1) -> pd.Series:
     """Derivative of a series"""
-    dx = np.gradient(series.data, order)
+    dx = np.gradient(series.values, order)
     dt = np.gradient(series.index, order)
     dxdt = np.zeros(dx.shape)
     for i, dt_i in enumerate(dt):

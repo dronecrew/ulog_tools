@@ -39,7 +39,7 @@ def attitude_loop_design(m, name, dcut_hz, fbcut_hz, est_delay):
         'MC_{:s}_P'.format(name): K[0, 0],
     }
 
-def main():
+def main(raw_args=None):
     
     parser = argparse.ArgumentParser()
 
@@ -53,7 +53,7 @@ def main():
     parser.add_argument('--plot', action='store_true', help="enable plotting")
     parser.add_argument('--verbose', action='store_true', help="enable verbose")
     parser.add_argument('out', help="output file")
-    args = parser.parse_args()
+    args = parser.parse_args(raw_args)
 
     if args.url is not None:
         log_file = ut.ulog.download_log(args.url, '/tmp')
