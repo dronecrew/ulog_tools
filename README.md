@@ -3,6 +3,7 @@ ulog analysis tools
 
 ## Requirements
 
+* Must enable SDLOG_PROFILE high rate.
 * Python 3
 * see environment.yml for dependencies
 
